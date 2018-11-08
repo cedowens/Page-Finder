@@ -38,7 +38,7 @@ portopenlist = []
 def Connector(ip):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(0.6)
+        sock.settimeout(1.0)
         result = sock.connect_ex((str(ip),port2))
         sock.close()
         if result == 0:
