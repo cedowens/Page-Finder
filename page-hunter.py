@@ -165,7 +165,7 @@ def kubechecker(host):
             outfile.write("Kubernetes node allowing system:anonymous viewing of pods found:\n")
             outfile.write(url6)
             outfile.write("\n")
-            unauthexec.append(url6)
+            unauthexeclist.append(url6)
         elif (response6.status_code == 200 and '"items":null' in response6.text):
             print("+"*40)
             print("\033[33mKubernetes node with null PodList: %s\033[0m" % url6)
