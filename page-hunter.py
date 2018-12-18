@@ -67,11 +67,11 @@ def jenkinschecker(host):
     url5 = "http://" + host + ":" + str(port2) + "/command"
     
     try:
-        response = requests.get(url)
-        response2 = requests.get(url2)
-        response3 = requests.get(url3)
-        response4 = requests.get(url4)
-        response5 = requests.get(url5)
+        response = requests.get(url, timeout=1)
+        response2 = requests.get(url2, timeout=1)
+        response3 = requests.get(url3, timeout=1)
+        response4 = requests.get(url4, timeout=1)
+        response5 = requests.get(url5, timeout=1)
         
         if (response.status_code == 200 and 'Jenkins' in response.text and 'Console' in response.text):
             print("+"*40)
