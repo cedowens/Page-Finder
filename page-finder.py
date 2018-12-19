@@ -92,7 +92,6 @@ def pagechecker(host):
     url3 = "http://" + host + ":8080/manager/text"
     url4 = "http://" + host + ":8080/console"
     url5 = "http://" + host + ":8080/command"
-    url6 = "http://" + host + ":8080/.env"
  
     
     try:
@@ -101,7 +100,6 @@ def pagechecker(host):
         response3 = requests.get(url3, timeout=1)
         response4 = requests.get(url4, timeout=1)
         response5 = requests.get(url5, timeout=1)
-        response6 = requests.get(url6, timeout=1)
         
         if (response.status_code == 200 and 'Jenkins' in response.text and 'Console' in response.text):
             print("+"*40)
