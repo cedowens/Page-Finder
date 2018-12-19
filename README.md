@@ -28,7 +28,7 @@ Usage:
 
 -pip3 install -r requirements.txt
 
--python3 -W ignore page-hunter.py (this will ignore SSL warnings for the ssl pages)
+-python3 -W ignore page-finder.py (this will ignore SSL warnings for the ssl pages)
 
 Note: I updated page-hunter1.py to include searches for kubernetes nodes that allow system:anonymous viewing of pods (which will allow remote code execution).
 
