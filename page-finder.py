@@ -46,7 +46,7 @@ unsuccessful = []
 def Connector(ip):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1.0)
+        sock.settimeout(0.7)
         result = sock.connect_ex((str(ip),port2))
         sock.close()
         if result == 0:
@@ -62,7 +62,7 @@ def Connector(ip):
 def Connector2(ip):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1.0)
+        sock.settimeout(0.7)
         result = sock.connect_ex((str(ip),10250))
         sock.close()
         if result == 0:
