@@ -67,7 +67,7 @@ def Connector2(ip):
         sock.close()
         if result == 0:
             print("\033[92mPort 10250 OPEN on %s\033[0m" % str(ip))
-            outfile.write("Porrt 10250 OPEN on %s\n" % str(ip))
+            outfile.write("Port 10250 OPEN on %s\n" % str(ip))
             portopenlist2.append(str(ip))
         else:
             pass
