@@ -20,7 +20,7 @@ This script works in the following way:
 
 */Command page (any interesting pages)
 
-*/Kuberntes nodes with system:anonymous viewing of the /pods page
+*/Kubernetes nodes with system:anonymous viewing of the /pods page
 
 --------------------------
 Usage:
