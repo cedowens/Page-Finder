@@ -8,7 +8,7 @@ import requests
 from optparse import OptionParser
 
 if (len(sys.argv) < 5 and '-h' not in sys.argv):
-    print("Usage: %s -r <range> -t <threads>" % sys.argv[0])
+    print("Usage: python3 %s -r <range> -t <threads>" % sys.argv[0])
     sys.exit(1)
 
 parser = OptionParser()
